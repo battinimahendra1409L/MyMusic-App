@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Music App</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            margin: 0;
+        }
+
+        .container {
+            width: 60%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #2e7d32; 
+        }
+
+        .add {
+            color: #1976d2; 
+            margin-top: 20px;
+        }
+
+        .search {
+            color: #8e24aa; 
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 8px;
+            margin-top: 10px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #5a67d8;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row input {
+            flex: 1;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f4f6fb;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2 class="title">Music App</h2>
+
+    <h3 class="add">Add Song</h3>
+    <input id="title" placeholder="Title">
+    <input id="artist" placeholder="Artist">
+    <input id="language" placeholder="Language">
+    <input id="genre" placeholder="Genre">
+    <input id="tags" placeholder="Tags (comma separated)">
+    <input id="playCount" placeholder="Play Count">
+
+    <button onclick="addSong()">Add Song</button>
+
+    <hr>
+
+    <h3 class="search">Search Songs</h3>
+
+    <div class="row">
+        <input id="keyword" placeholder="Keyword">
+        <input id="searchLanguage" placeholder="Language">
+        <input id="searchGenre" placeholder="Genre">
+    </div>
+
+    <button onclick="searchSongs()">Search</button>
+
+    <div id="results"></div>
+
+</div>
+
+<script>
+function addSong() {
+
+    const title = document.getElementById("title").value.trim();
+    const artist = document.getElementById("artist").value.trim();
+    const language = document.getElementById("language").value.trim();
+    const genre = document.getElementById("genre").value.trim();
+    const tags = document.getElementById("tags").value.trim();
+    const playCount = document.getElementById("playCount").value.trim();
+
+    
+    if (!title || !artist || !language || !genre || !tags || !playCount) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    if (isNaN(playCount)) {
+        alert("Play Count must be a number");
+        return;
+    }
+
+    const song = {
+        title: title,
+        artist: artist,
+        language: language,
+        genre: genre,
+        tags: tags.split(","),
+        playCount: parseInt(playCount)
+    };
+
+    fetch("/api/songs", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(song)
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("Song added");
+
+      
+        document.getElementById("title").value = "";
+        document.getElementById("artist").value = "";
+        document.getElementById("language").value = "";
+        document.getElementById("genre").value = "";
+        document.getElementById("tags").value = "";
+        document.getElementById("playCount").value = "";
+
+        searchSongs(); 
+    });
+}
+
+function searchSongs() {
+    const keyword = document.getElementById("keyword").value;
+    const language = document.getElementById("searchLanguage").value;
+    const genre = document.getElementById("searchGenre").value;
+
+    let url = "/api/search?page=0&size=10";
+
+    if (keyword) url += "&keyword=" + keyword;
+    if (language) url += "&language=" + language;
+    if (genre) url += "&genre=" + genre;
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        let output = "";
+
+        if (data.content.length === 0) {
+            output = "<p>No songs found</p>";
+        } else {
+            data.content.forEach(song => {
+
+                
+                if (!song.title || song.title.trim() === "") return;
+
+                output += `
+                    <div class="result">
+                        <b>${song.title}</b> - ${song.artist} <br>
+                        ${song.language} | ${song.genre} <br>
+                        Plays: ${song.playCount}
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById("results").innerHTML = output;
+    });
+}
+
+
+window.onload = function() {
+    searchSongs();
+};
+</script>
+
+</body>
+</html>
