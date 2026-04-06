@@ -19,7 +19,7 @@ Project Structure:
 Setup Instructions:
 
 1. Clone the repository:
-   git clone https://github.com/bartinimahendra1409/MyMusic-App.git
+   git clone https://github.com/battinimahendra1409L/MyMusic-App.git
 
 2. Open the project in an IDE (STS / IntelliJ)
 
